@@ -6,6 +6,7 @@ const cors = require('cors');
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
+app.options('*',cors());
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -18,7 +19,7 @@ const database = {
             id: '123',
             name: 'carlos',
             email: 'carlos@gmail.com',
-            password: 'yutaqla',
+            password: '123',
             entries: 0,
             joined: new Date()
         },
@@ -26,7 +27,7 @@ const database = {
             id: '124',
             name: 'alexandra',
             email: 'alexandra@gmail.com',
-            password: 'acab',
+            password: '123',
             entries: 0,
             joined: new Date()
         }
@@ -40,9 +41,11 @@ app.get('/', (req, resp) => {
 
 app.post('/signin',(req, resp) => {
     console.log('Solicitando login :', req.body.email + " / " + req.body.password);
+
     if(req.body.email === database.users[0].email &&
         req.body.password === database.users[0].password){
-        resp.json({status: 'ok'});
+        // resp.json('ok');
+        resp.json({status:'ok'});
         console.log('exito');
     } else {
         console.log('Fail');
