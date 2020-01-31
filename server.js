@@ -1,107 +1,42 @@
+// Import de librerias externas
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt-nodejs');
+
+// Import de controladores
+const register = require('./controllers/registerController');
+const signin = require('./controllers/signinController');
+const profile = require('./controllers/profileController');
+const imageController = require('./controllers/imageController');
+
+
 const cors = require('cors');
+const knex = require('knex');
+const PORT = process.env.PORT || 3000;
+
+
+const db = knex({
+    client: 'pg',
+    connection: {
+        host : '127.0.0.1',
+        user : 'cgarrido',
+        password : 'Odin2020',
+        database : 'reconocimiento-facial'
+    }
+});
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 app.options('*',cors());
 
-const PORT = process.env.PORT || 3000;
+app.get('/', (req, resp) => {resp.send(database.users)})
+app.post('/signin', signin.handlerSignin(db, bcrypt))
+app.post('/register', register.handleRegister(db, bcrypt))
+app.get('/profile/:id', profile.handlerProfile(db))
+app.put('/image', imageController.handlerImage(db))
+app.post('/imageurl', imageController.handleApiCall)
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
-
-const database = {
-    users: [
-        {
-            id: '123',
-            name: 'carlos',
-            email: 'carlos@gmail.com',
-            password: '123',
-            entries: 0,
-            joined: new Date()
-        },
-        {
-            id: '124',
-            name: 'alexandra',
-            email: 'alexandra@gmail.com',
-            password: '123',
-            entries: 0,
-            joined: new Date()
-        }
-    ]
-}
-
-app.get('/', (req, resp) => {
-    console.log('Solicitando usuarios')
-    resp.send(database.users);
-})
-
-app.post('/signin',(req, resp) => {
-    console.log('Solicitando login :', req.body.email + " / " + req.body.password);
-
-    if(req.body.email === database.users[0].email &&
-        req.body.password === database.users[0].password){
-        // resp.json('ok');
-        resp.json({status:'ok'});
-        console.log('exito');
-    } else {
-        console.log('Fail');
-        resp.status(400).json({ error : 'Usuario y/o password incorrecto'});
-    }
-})
-
-app.post('/register', (req, resp) => {
-    const {email, name, password} = req.body;
-
-    bcrypt.hash(password, null, null,function(err, hash) {
-        console.log(hash);
-    });
-
-
-    database.users.push({
-        id: '125',
-        name: name,
-        email: email,
-        password: password,
-        entries: 0,
-        joined: new Date()
-    })
-
-    resp.json(database.users[database.users.length-1]);
-})
-
-app.get('/profile/:id', (req, resp) => {
-    const {id} = req.params;
-    let encontrado = false;
-    database.users.forEach(user => {
-        if (user.id === id){
-            encontrado = true;
-            return resp.json(user);
-        }
-    })
-    if(!encontrado){
-        resp.status(400).json('Usuario no encontrado');
-    }
-})
-
-app.post('/image', (req, resp) => {
-    const {id} = req.body;
-    let encontrado = false;
-    database.users.forEach(user => {
-        if (user.id === id){
-            encontrado = true;
-            user.entries++;
-            return resp.json(user.entries);
-        }
-    })
-    if(!encontrado){
-        resp.status(400).json('Usuario no encontrado');
-    }
-})
-
-// app.listen(3000, () => {
-//     console.log('app is running on port 3000');
-// })
